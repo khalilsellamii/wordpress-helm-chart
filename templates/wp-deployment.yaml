@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.wordpressDeployment.name }}
+spec:
+  replicas: {{ .Values.wordpressDeployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.wordpressDeployment.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.wordpressDeployment.name }}
+    spec:
+      containers:
+        - name: wordpress
+          image: {{ .Values.wordpressDeployment.image.repository }}:{{ .Values.wordpressDeployment.image.tag }}
+          ports:
+          - containerPort: {{ .Values.wordpressDeployment.image.port }}
+            name: {{ .Values.wordpressDeployment.name }}
+          volumeMounts:
+            - name: {{ .Values.wordpressDeployment.persistence.name }}
+              mountPath: {{ .Values.wordpressDeployment.persistence.mountPath }}
+          env:
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wp-db-secrets
+                  key: MYSQL_ROOT_PASSWORD                 
+          {{- range .Values.wordpressDeployment.env }}
+            - name: {{ .name }}
+              value: {{ .value }}
+          {{- end }}
+      volumes:
+        - name: {{ .Values.wordpressDeployment.persistence.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.wordpressDeployment.persistence.name }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.wordpressDeployment.service.name }}
+spec:
+  selector:
+    app: {{ .Values.wordpressDeployment.name }}
+  type: {{ .Values.wordpressDeployment.service.type }}  
+  ports:
+    - protocol: {{ .Values.wordpressDeployment.service.protocol }}
+      port: {{ .Values.wordpressDeployment.service.port }}
+      targetPort: {{ .Values.wordpressDeployment.service.targetPort }}             

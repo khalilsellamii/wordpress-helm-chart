@@ -1,0 +1,54 @@
+wordpressDeployment:
+  replicaCount: 1
+  name: wordpress
+  image: 
+    repository: wordpress
+    tag: latest
+    port: 80
+  service:
+    name: wordpress
+    protocol: TCP
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+  env:
+    - name: WORDPRESS_DB_HOST  
+      value: mysql
+    - name: WORDPRESS_DB_USER
+      value: root
+    - name: WORDPRESS_DB_NAME
+      value: wordpress
+  persistence:
+    enabled: true
+    name: wordpress-volume
+    mountPath: /var/www
+    accessMode: ReadWriteOnce
+    storageSize: 1Gi
+     
+
+
+mysqlStatefulSet:
+  replicaCount: 1
+  name: mysql
+  image:
+    repository: mysql
+    tag: 5.7
+    port: 3306
+    imagePullPolicy: Always
+  service:
+    name: mysql
+    protocol: TCP
+    type: ClusterIP
+    port: 3306
+    targetPort: 3306
+  env: 
+    name: MYSQL_DATABASE
+    value : wordpress
+  persistence:
+    enabled: true
+    name: mysql-storage  
+    mountPath: /var/lib/mysql
+    storageClassName: "default"
+    accessModes: [ "ReadWriteOnce" ]
+    storageSize: 1Gi
+

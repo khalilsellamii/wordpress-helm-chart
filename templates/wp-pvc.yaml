@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.wordpressDeployment.persistence.name }}
+spec:
+  accessModes:
+  - {{ .Values.wordpressDeployment.persistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.wordpressDeployment.persistence.storageSize }}
